@@ -6,6 +6,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\FormationRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Niveau;
 
 /**
  * Description of FormationsController
@@ -24,10 +26,18 @@ class FormationsController extends AbstractController {
 
     /**
      * 
-     * @param FormationRepository $repository
+     * @var EntityManagerInterface
      */
-    function __construct(FormationRepository $repository) {
+    private $om;
+    
+    /**
+     * 
+     * @param FormationRepository $repository
+     * @param EntityManagerInterface $om
+     */
+    function __construct(FormationRepository $repository, EntityManagerInterface $om) {
         $this->repository = $repository;
+        $this->om = $om;
     }
 
     /**
@@ -36,6 +46,15 @@ class FormationsController extends AbstractController {
      */
     public function index(): Response{
         $formations = $this->repository->findAll();
+        $niveaux = array("Débutant", "Apprenti", "Intermédiaire", "Confirmé", "Expert", "Maître");
+        // génération des enregistrements
+        for($k = 0; $k < count($niveaux); $k++){
+            $niveau = new Niveau();
+            $niveau->setLibelle(($niveaux[$k]));
+            // enregistrement de l'objet
+            $this->om->persist($niveau);
+        }
+        $this->om->flush();
         return $this->render(self::PAGEFORMATIONS, [
             'formations' => $formations
         ]);
