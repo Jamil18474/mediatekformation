@@ -6,6 +6,8 @@ use DateTime;
 use DateTimeInterface;
 use App\Repository\FormationRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * @ORM\Entity(repositoryClass=FormationRepository::class)
@@ -149,5 +151,41 @@ class Formation
     
     public function getNiveauLibelle() : string {
         return $this->getNiveau()->getLibelle();
+    }
+    
+    /**
+     * Vérifie la conformité des images
+     * @Assert\Callback
+     */
+    public function validateImages(ExecutionContextInterface $context)
+    {
+        if($this->getMiniature() != "")  {
+            if(!exif_imagetype($this->getMiniature())) {
+                $context->buildViolation("Veuillez insérer une image.")
+                ->atPath('miniature')
+                ->addViolation();
+            } else {
+                list($widthminiature, $heightminiature) = getimagesize($this->getMiniature());
+                if($widthminiature != 120 || $heightminiature != 90) {
+                    $context->buildViolation("Les dimensions de l'image sont incorrectes.")
+                    ->atPath('miniature')
+                    ->addViolation();
+                }
+            }
+        }
+        if($this->getPicture() != "") {
+            if(!exif_imagetype($this->getPicture())) {
+                $context->buildViolation("Veuillez insérer une image.")
+                ->atPath('picture')
+                ->addViolation();
+            } else {
+                list($widthpicture, $heightpicture) = getimagesize($this->getPicture());
+                if($widthpicture > 640 || $heightpicture > 480) {
+                    $context->buildViolation("Les dimensions de l'image sont trop grandes.")
+                    ->atPath('picture')
+                    ->addViolation();
+                }
+            }
+        }
     }
 }
