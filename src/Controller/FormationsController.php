@@ -54,15 +54,10 @@ class FormationsController extends AbstractController {
      */
     public function index(): Response{
         $formations = $this->repository->findAll();
-        // génération des enregistrements
-        foreach ($formations as $formation) {
-            $formation->setNiveau($this->niveaurepository->find(rand(1,6)));
-            // enregistrement de l'objet
-            $this->om->persist($formation);
-        }
-        $this->om->flush();
+        $niveaux = $this->niveaurepository->findAll();
         return $this->render(self::PAGEFORMATIONS, [
-            'formations' => $formations
+            'formations' => $formations,
+            'niveaux' => $niveaux 
         ]);
     }
     
@@ -74,8 +69,10 @@ class FormationsController extends AbstractController {
      */
     public function sort($champ, $ordre): Response{
         $formations = $this->repository->findAllOrderBy($champ, $ordre);
+        $niveaux = $this->niveaurepository->findAll();
         return $this->render(self::PAGEFORMATIONS, [
-           'formations' => $formations
+            'formations' => $formations,
+            'niveaux' => $niveaux 
         ]);
     }   
         
@@ -89,8 +86,10 @@ class FormationsController extends AbstractController {
         if($this->isCsrfTokenValid('filtre_'.$champ, $request->get('_token'))){
             $valeur = $request->get("recherche");
             $formations = $this->repository->findByContainValue($champ, $valeur);
+            $niveaux = $this->niveaurepository->findAll();
             return $this->render(self::PAGEFORMATIONS, [
-                'formations' => $formations
+                'formations' => $formations,
+                'niveaux' => $niveaux 
             ]);
         }
         return $this->redirectToRoute("formations");

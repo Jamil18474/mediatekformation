@@ -146,4 +146,8 @@ class Formation
 
         return $this;
     }
+    
+    public function getNiveauLibelle() : string {
+        return $this->getNiveau()->getLibelle();
+    }
 }
